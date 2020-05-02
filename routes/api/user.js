@@ -27,7 +27,9 @@ router.post("/register", (req, res) => {
           name: req.body.name,
           email: req.body.email,
           password: req.body.password,
-          profile_img: req.body.profile_img,
+          profile_img: req.body.profile_img
+            ? req.body.profile_img
+            : "https://api.adorable.io/avatars/600/bcd2533e9816efec370c138dced2cef2.png",
         });
 
         bcrypt.genSalt(10, (err, salt) => {
