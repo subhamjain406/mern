@@ -5,14 +5,10 @@ const jwt = require("jsonwebtoken");
 const keys = require("../../config/key");
 const passport = require("passport");
 const validateRegisterInput = require("../../validator/regsiter");
+const validateLoginIput = require("../../validator/login");
 
 // Load User Model
 const User = require("../../models/userModel");
-
-// @route  Get api/user/test
-// @desc   test user api
-// @access public
-router.get("/test", (req, res) => res.json({ msg: "user is working" }));
 
 // @route  Post api/user/register
 // @desc   register user
@@ -23,14 +19,15 @@ router.post("/register", (req, res) => {
     console.log(isValid);
     res.status(400).json(error);
   } else {
-    User.findOne({ email: req.body.email }).then(user => {
+    User.findOne({ email: req.body.email }).then((user) => {
       if (user) {
         return res.status(400).json({ message: "user Already exists" });
       } else {
         const newUser = new User({
           name: req.body.name,
           email: req.body.email,
-          password: req.body.password
+          password: req.body.password,
+          profile_img: req.body.profile_img,
         });
 
         bcrypt.genSalt(10, (err, salt) => {
@@ -39,10 +36,10 @@ router.post("/register", (req, res) => {
             newUser.password = hash;
             newUser
               .save()
-              .then(user => {
-                res.json(user);
+              .then((user) => {
+                res.json({ status: "Success", user });
               })
-              .catch(err => {
+              .catch((err) => {
                 console.log(err);
               });
           });
@@ -59,38 +56,46 @@ router.post("/login", (req, res) => {
   const email = req.body.email;
   const password = req.body.password;
 
-  User.findOne({ email }).then(user => {
-    if (!user) {
-      return res.status(400).json({ message: "user not found" });
-    } else {
-      bcrypt.compare(password, user.password).then(isMatch => {
-        if (isMatch) {
-          // user match
+  const { error, isValid } = validateLoginIput(req.body);
+  if (!isValid) {
+    console.log(isValid);
+    res.status(400).json(error);
+  } else {
+    User.findOne({ email }).then((user) => {
+      if (!user) {
+        return res.status(400).json({ email: "user not found" });
+      } else {
+        bcrypt.compare(password, user.password).then((isMatch) => {
+          if (isMatch) {
+            // user match
 
-          // create jwt payload
-          const paylaod = {
-            id: user.id,
-            name: user.name
-          };
+            // create jwt payload
+            const paylaod = {
+              id: user.id,
+              name: user.name,
+            };
 
-          // sign token
-          jwt.sign(
-            paylaod,
-            keys.secretKey,
-            { expiresIn: 3600 },
-            (err, token) => {
-              res.json({
-                message: "Success",
-                token: "Bearer " + token
-              });
-            }
-          );
-        } else {
-          return res.status(400).json({ message: "password is not correct" });
-        }
-      });
-    }
-  });
+            // sign token
+            jwt.sign(
+              paylaod,
+              keys.secretKey,
+              { expiresIn: 3600 },
+              (err, token) => {
+                res.json({
+                  message: "Success",
+                  token: "Bearer " + token,
+                });
+              }
+            );
+          } else {
+            return res
+              .status(400)
+              .json({ password: "password is not correct" });
+          }
+        });
+      }
+    });
+  }
 });
 
 // @route  Post api/user/current
@@ -100,7 +105,13 @@ router.get(
   "/current",
   passport.authenticate("jwt", { session: false }),
   (req, res) => {
-    res.json(req.user);
+    const user = {
+      id: req.user.id,
+      name: req.user.name,
+      email: req.user.email,
+      profile_img: req.user.profile_img,
+    };
+    res.json(user);
   }
 );
 

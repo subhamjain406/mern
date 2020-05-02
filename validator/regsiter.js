@@ -19,14 +19,14 @@ module.exports = function validateRegisterInput(data) {
     is_valid = false;
   }
 
-  if (validator.isEmpty(data.email)) {
-    is_valid = false;
-    error.email = "email field is required";
-  }
-
   if (!validator.isEmail(data.email)) {
     is_valid = false;
     error.email = "email is invalid";
+  }
+
+  if (validator.isEmpty(data.email)) {
+    is_valid = false;
+    error.email = "email field is required";
   }
 
   if (!validator.isLength(data.password, { min: 6, max: 40 })) {
@@ -41,6 +41,6 @@ module.exports = function validateRegisterInput(data) {
 
   return {
     error: error,
-    isValid: is_valid
+    isValid: is_valid,
   };
 };
