@@ -8,11 +8,11 @@
     "npm": "6.13.4"
   },
   "scripts": {
-    "client-install": "npm install --prefix client",
+    "client-install": "npm install --prefix html",
     "start": "node server.js",
     "server": "nodemon server.js",
-    "client": "npm start --prefix client",
-    "dev": "concurrently \"npm run server\" \"npm run client\""
+    "html": "npm start --prefix html",
+    "dev": "concurrently \"npm run server\" \"npm run html\""
   },
   "author": "",
   "license": "MIT",
