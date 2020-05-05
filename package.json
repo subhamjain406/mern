@@ -12,7 +12,8 @@
     "start": "node server.js",
     "server": "nodemon server.js",
     "html": "npm start --prefix html",
-    "dev": "concurrently \"npm run server\" \"npm run html\""
+    "dev": "concurrently \"npm run server\" \"npm run html\"",
+    "heroku-postbuild": "cd html && npm install && npm run build"
   },
   "author": "",
   "license": "MIT",

@@ -3,6 +3,7 @@ const mongoose = require("mongoose");
 const bodyParser = require("body-parser");
 const passport = require("passport");
 var cors = require("cors");
+var path = require("path");
 
 const user = require("./routes/api/user");
 const profile = require("./routes/api/profile");
@@ -61,6 +62,13 @@ require("./config/passport.js")(passport);
 app.use("/api/user", user);
 app.use("/api/profile", profile);
 app.use("/api/post", post);
+
+// Serve static files from the React frontend app
+app.use(express.static(path.join(__dirname, "html/build")));
+// Anything that doesn't match the above, send back index.html
+app.get("*", (req, res) => {
+  res.sendFile(path.join(__dirname + "/html/build/index.html"));
+});
 
 const port = process.env.PORT || 5000;
 
