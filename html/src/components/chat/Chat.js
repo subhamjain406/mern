@@ -8,7 +8,8 @@ import Input from "./Input/Input";
 import Message from "./Message/Message";
 
 let socket;
-const Endpoint = "localhost:5000";
+// const Endpoint = "localhost:5000";
+const Endpoint = "https://blooming-hollows-76971.herokuapp.com/";
 
 const Chat = (props) => {
   const { user } = props.auth;
