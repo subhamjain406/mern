@@ -49,7 +49,6 @@ const Login = (props) => {
       [name]: value,
       error: { ...state.error, [name]: "" },
     });
-    console.log(state);
   };
 
   const errorsToDisplay = state.error;

@@ -4,10 +4,19 @@ const bodyParser = require("body-parser");
 const passport = require("passport");
 var cors = require("cors");
 var path = require("path");
+const socketio = require("socket.io");
+const http = require("http");
 
 const user = require("./routes/api/user");
 const profile = require("./routes/api/profile");
 const post = require("./routes/api/post");
+const chat = require("./routes/api/chat");
+const {
+  addUser,
+  getUser,
+  getUsersInRoom,
+  removeUser,
+} = require("./chat_users");
 
 const app = express();
 
@@ -62,6 +71,7 @@ require("./config/passport.js")(passport);
 app.use("/api/user", user);
 app.use("/api/profile", profile);
 app.use("/api/post", post);
+app.use("/api/chat", chat);
 
 // Serve static files from the React frontend app
 app.use(express.static(path.join(__dirname, "html/build")));
@@ -72,4 +82,63 @@ app.get("*", (req, res) => {
 
 const port = process.env.PORT || 5000;
 
-const server = app.listen(port, () => console.log("server running"));
+const server = http.createServer(app);
+
+//socket integration
+const io = socketio(server);
+
+//socket event
+io.on("connection", (socket) => {
+  //join user
+  socket.on("join", (id, name, room, callback) => {
+    const { user } = addUser({ id, name, room });
+    console.log(user);
+
+    socket.emit("message", {
+      user: "admin",
+      text: `${user.name}, welcome to the room`,
+    });
+    socket.broadcast
+      .to(user.room)
+      .emit("message", { user: "admin", text: `${user.name} has joined` });
+
+    socket.join(user.room);
+
+    io.to(user.room).emit("roomData", {
+      room: user.room,
+      users: getUsersInRoom(user.room),
+    });
+
+    callback();
+  });
+
+  //send message
+  socket.on("sendMessage", (id, message, callback) => {
+    const user = getUser(id);
+
+    console.log(user);
+
+    io.to(user.room).emit("message", { user: user.name, text: message });
+    io.to(user.room).emit("roomData", {
+      room: user.room,
+      users: getUsersInRoom(user.room),
+    });
+
+    callback();
+  });
+
+  //socket disconnect
+  socket.on("disconnection", (id) => {
+    console.log(id);
+    const user = removeUser(id);
+    console.log("deleted user", user);
+    if (user) {
+      io.to(user.room).emit("message", {
+        user: "admin",
+        text: `${user.name} has left`,
+      });
+    }
+  });
+});
+
+server.listen(port, () => console.log("server running"));
