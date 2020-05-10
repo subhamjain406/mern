@@ -2,10 +2,16 @@ import React from "react";
 import classnames from "classnames";
 
 const Member = (props) => {
-  const { user, click, selected } = props;
+  const { user, click, selected, userConnected } = props;
   const dualEvent = (user, event) => {
     click(user, event);
   };
+  user.online = false;
+  userConnected.map((item) => {
+    if (item == user._id) {
+      user.online = true;
+    }
+  });
   return (
     <div>
       <a
@@ -29,9 +35,9 @@ const Member = (props) => {
           <div className="media-body ml-4 my-auto">
             <div className="d-flex align-items-center justify-content-between mb-1">
               <h6 className="mb-0">{user.name}</h6>
-              {/* <small className="small font-weight-bold text-success">
-                Online
-              </small> */}
+              <small className="small font-weight-bold">
+                {user.online ? "Online" : "Offline"}
+              </small>
             </div>
           </div>
         </div>

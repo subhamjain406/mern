@@ -84,6 +84,7 @@ const server = http.createServer(app);
 const io = socketio(server);
 
 var sessionUsers = [];
+var userConnected = [];
 
 //socket event
 io.on("connection", (socket) => {
@@ -91,14 +92,16 @@ io.on("connection", (socket) => {
   socket.on("join", (id, callback) => {
     sessionUsers[id] = socket.id;
     console.log(sessionUsers);
+    userConnected.push(id);
 
     // socket.emit("message", {
     //   user: "admin",
     //   text: `${user.name}, welcome to the room`,
-    // });
-    // socket.broadcast.emit("user_connected", id);
+    // })
 
     // socket.join(sessionUsers[id]);
+
+    io.emit("user_connected", userConnected);
 
     // io.to(user.room).emit("roomData", {
     //   room: user.room,
@@ -128,35 +131,22 @@ io.on("connection", (socket) => {
     } catch (error) {
       console.log(error);
     }
-    // io.to(user.room).emit("message", { user: user.name, text: message });
-    // io.to(user.room).emit("roomData", {
-    //   room: user.room,
-    //   users: getUsersInRoom(user.room),
-    // });
-
     callback();
   });
 
   //socket disconnect
   socket.on("disconnection", (id) => {
-    // console.log(id);
-    // const user = removeUser(id);
-    // console.log("deleted user", user);
-    // if (user) {
-    //   io.to(user.room).emit("message", {
-    //     user: "admin",
-    //     text: `${user.name} has left`,
-    //   });
-    // }
-    removeSessionUser(id);
+    if (sessionUsers[id]) {
+      delete sessionUsers[id];
+    }
+    const index = userConnected.findIndex((item) => item == id);
+    if (index > -1) {
+      userConnected.splice(index, 1);
+      io.emit("user_connected", userConnected);
+    } else {
+      io.emit("user_connected", userConnected);
+    }
   });
 });
-
-const removeSessionUser = (id) => {
-  if (sessionUsers[id]) {
-    delete sessionUsers[id];
-    console.log(sessionUsers);
-  }
-};
 
 server.listen(port, () => console.log("server running"));

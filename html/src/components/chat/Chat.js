@@ -15,10 +15,9 @@ import Member from "./Member/Member";
 import Spinner from "../common/spinner";
 
 let socket;
-let receiverId;
-let selected = false;
-// const Endpoint = "localhost:5000";
-const Endpoint = "https://blooming-hollows-76971.herokuapp.com/";
+let receiverId = "";
+const Endpoint = "localhost:5000";
+// const Endpoint = "https://blooming-hollows-76971.herokuapp.com/";
 
 const Chat = (props) => {
   const { user, users } = props.auth;
@@ -26,6 +25,7 @@ const Chat = (props) => {
 
   const [messages, setMessages] = useState([]);
   const [message, setMessage] = useState("");
+  const [userConnected, setUserConnected] = useState([]);
 
   useEffect(() => {
     socket = io(Endpoint);
@@ -37,7 +37,6 @@ const Chat = (props) => {
     props.getAllUser();
 
     return () => {
-      console.log("offline");
       socket.emit("disconnection", user.id);
 
       socket.off();
@@ -46,17 +45,22 @@ const Chat = (props) => {
     };
   }, []);
 
-  useEffect(() => {
-    socket.on("message", (message) => {
-      console.log("message", message);
-      setMessages([...messages, message]);
-    });
-  }, [messages]);
+  // useEffect(() => {
+  //   socket.on("message", (message) => {
+  //     setMessages([...messages, message]);
+  //   });
+  // }, [messages]);
 
   useEffect(() => {
     setMessages(chats, ...messages);
-    console.log(messages);
   }, [chats]);
+
+  useEffect(() => {
+    socket.on("user_connected", (userConnected) => {
+      console.log(userConnected);
+      setUserConnected(userConnected);
+    });
+  }, [userConnected]);
 
   const sendMessage = (event) => {
     event.preventDefault();
@@ -72,7 +76,6 @@ const Chat = (props) => {
             receiver: receiverId,
           },
         ]);
-        console.log(user.id, messages);
       });
     }
   };
@@ -106,6 +109,7 @@ const Chat = (props) => {
                         user={item}
                         click={onClick}
                         selected={receiverId === item._id}
+                        userConnected={userConnected}
                       />
                     ) : null
                   )
@@ -118,7 +122,7 @@ const Chat = (props) => {
         </div>
         <div className="col-7 px-0">
           {messages.length > 0 ? (
-            <Message messages={messages} />
+            <Message messages={messages} receiverId={receiverId} />
           ) : (
             <div className="px-4 py-5 chat-box bg-white"></div>
           )}

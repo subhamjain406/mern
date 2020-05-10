@@ -104,6 +104,7 @@ export const getAllUser = () => (dispatch) => {
     .get("/api/user/all")
     .then((data) => {
       console.log(data);
+      data.data.map((item) => (item.online = false));
       dispatch({
         type: GET_ALL_USER,
         payload: data.data,
