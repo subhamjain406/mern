@@ -16,8 +16,8 @@ import Spinner from "../common/spinner";
 
 let socket;
 let receiverId = "";
-const Endpoint = "localhost:5000";
-// const Endpoint = "https://blooming-hollows-76971.herokuapp.com/";
+// const Endpoint = "localhost:5000";
+const Endpoint = "https://blooming-hollows-76971.herokuapp.com/";
 
 const Chat = (props) => {
   const { user, users } = props.auth;
