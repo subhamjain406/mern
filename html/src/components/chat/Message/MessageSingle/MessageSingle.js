@@ -1,35 +1,42 @@
 import React from "react";
-import "./MessageSingle.css";
 import { connect } from "react-redux";
 import propTypes from "prop-types";
 import ReactEmoji from "react-emoji";
 
 const MessageSingle = (props) => {
   let isSendByCurrentUser = false;
+  let showMessage = false;
   const { user } = props.auth;
-  const { message, name } = props;
-  if (user.name == name) {
+  const { message } = props;
+  if (user.id == message.sender) {
     isSendByCurrentUser = true;
   }
-  return isSendByCurrentUser ? (
-    <div className="messageContainer justifyEnd">
-      <p className="sentText pr-10">{user.name}</p>
-      <div className="messageBox backgroundBlue">
-        <p className="messageText colorWhite">
-          {ReactEmoji.emojify(message.text)}
-        </p>
+  if (user.id == message.sender || user.id == message.receiver) {
+    showMessage = true;
+  }
+  return showMessage ? (
+    !isSendByCurrentUser ? (
+      <div className="media w-50 mb-3">
+        <div className="media-body ml-3">
+          <div className="bg-light rounded py-2 px-3 mb-2">
+            <p className="text-small mb-0 text-muted text-message">
+              {ReactEmoji.emojify(message.message)}
+            </p>
+          </div>
+        </div>
       </div>
-    </div>
-  ) : (
-    <div className="messageContainer justifyStart">
-      <div className="messageBox backgroundLight">
-        <p className="messageText colorDark">
-          {ReactEmoji.emojify(message.text)}
-        </p>
+    ) : (
+      <div className="media w-50 ml-auto mb-3">
+        <div className="media-body">
+          <div className="bg-primary rounded py-2 px-3 mb-2">
+            <p className="text-small mb-0 text-white text-message">
+              {ReactEmoji.emojify(message.message)}
+            </p>
+          </div>
+        </div>
       </div>
-      <p className="sentText pl-10">{name}</p>
-    </div>
-  );
+    )
+  ) : null;
 };
 
 MessageSingle.propTypes = {

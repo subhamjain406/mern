@@ -9,6 +9,11 @@ const Spinner = () => {
         height: "3rem",
         margin: "auto",
         display: "block",
+        left: "50%",
+        top: "50%",
+        position: "absolute",
+        marginLeft: "-2em",
+        marginTop: "-2em",
       }}
       role="status"
     >

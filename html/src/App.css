@@ -105,3 +105,23 @@ img {
   cursor: none;
   pointer-events: none;
 }
+
+.text-small {
+  font-size: 0.9rem;
+}
+
+.messages-box {
+  height: 510px;
+  overflow-y: scroll;
+}
+.chat-box {
+  height: 510px;
+}
+
+.rounded-lg {
+  border-radius: 0.5rem;
+}
+
+.text-message img {
+  width: 100px;
+}

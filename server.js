@@ -6,17 +6,13 @@ var cors = require("cors");
 var path = require("path");
 const socketio = require("socket.io");
 const http = require("http");
+const Chat = require("./models/chatModel");
 
 const user = require("./routes/api/user");
 const profile = require("./routes/api/profile");
 const post = require("./routes/api/post");
 const chat = require("./routes/api/chat");
-const {
-  addUser,
-  getUser,
-  getUsersInRoom,
-  removeUser,
-} = require("./chat_users");
+const { addUser, removeUser } = require("./chat_users");
 
 const app = express();
 
@@ -87,58 +83,80 @@ const server = http.createServer(app);
 //socket integration
 const io = socketio(server);
 
+var sessionUsers = [];
+
 //socket event
 io.on("connection", (socket) => {
   //join user
-  socket.on("join", (id, name, room, callback) => {
-    const { user } = addUser({ id, name, room });
-    console.log(user);
+  socket.on("join", (id, callback) => {
+    sessionUsers[id] = socket.id;
+    console.log(sessionUsers);
 
-    socket.emit("message", {
-      user: "admin",
-      text: `${user.name}, welcome to the room`,
-    });
-    socket.broadcast
-      .to(user.room)
-      .emit("message", { user: "admin", text: `${user.name} has joined` });
+    // socket.emit("message", {
+    //   user: "admin",
+    //   text: `${user.name}, welcome to the room`,
+    // });
+    // socket.broadcast.emit("user_connected", id);
 
-    socket.join(user.room);
+    // socket.join(sessionUsers[id]);
 
-    io.to(user.room).emit("roomData", {
-      room: user.room,
-      users: getUsersInRoom(user.room),
-    });
+    // io.to(user.room).emit("roomData", {
+    //   room: user.room,
+    //   users: getUsersInRoom(user.room),
+    // });
 
     callback();
   });
 
   //send message
-  socket.on("sendMessage", (id, message, callback) => {
-    const user = getUser(id);
+  socket.on("sendMessage", (id, message, type, receiver, callback) => {
+    try {
+      const chat = new Chat({
+        sender: id,
+        message: message,
+        type: type,
+        receiver: receiver,
+      });
+      chat.save((err, doc) => {
+        if (err) return res.json({ err });
 
-    console.log(user);
-
-    io.to(user.room).emit("message", { user: user.name, text: message });
-    io.to(user.room).emit("roomData", {
-      room: user.room,
-      users: getUsersInRoom(user.room),
-    });
+        Chat.findOne({ _id: doc._id }).exec((err, doc) => {
+          console.log("emmiting message", sessionUsers[doc.receiver]);
+          return io.to(sessionUsers[doc.receiver]).emit("message", doc);
+        });
+      });
+    } catch (error) {
+      console.log(error);
+    }
+    // io.to(user.room).emit("message", { user: user.name, text: message });
+    // io.to(user.room).emit("roomData", {
+    //   room: user.room,
+    //   users: getUsersInRoom(user.room),
+    // });
 
     callback();
   });
 
   //socket disconnect
   socket.on("disconnection", (id) => {
-    console.log(id);
-    const user = removeUser(id);
-    console.log("deleted user", user);
-    if (user) {
-      io.to(user.room).emit("message", {
-        user: "admin",
-        text: `${user.name} has left`,
-      });
-    }
+    // console.log(id);
+    // const user = removeUser(id);
+    // console.log("deleted user", user);
+    // if (user) {
+    //   io.to(user.room).emit("message", {
+    //     user: "admin",
+    //     text: `${user.name} has left`,
+    //   });
+    // }
+    removeSessionUser(id);
   });
 });
+
+const removeSessionUser = (id) => {
+  if (sessionUsers[id]) {
+    delete sessionUsers[id];
+    console.log(sessionUsers);
+  }
+};
 
 server.listen(port, () => console.log("server running"));

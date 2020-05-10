@@ -1,10 +1,16 @@
-import { SET_CURRENT_USER, SET_CURRENT_USER_LOADING } from "../actions/types";
+import {
+  SET_CURRENT_USER,
+  SET_CURRENT_USER_LOADING,
+  GET_ALL_USER,
+  CLEAR_ALL_USER,
+} from "../actions/types";
 import isEmpty from "../utility/empty";
 
 const initailState = {
   isAuthenticate: false,
   user: {},
   loading: false,
+  users: [],
 };
 
 export default function (state = initailState, action) {
@@ -21,6 +27,17 @@ export default function (state = initailState, action) {
         ...state,
         loading: true,
       };
+    case GET_ALL_USER:
+      return {
+        ...state,
+        users: action.payload,
+      };
+    case CLEAR_ALL_USER: {
+      return {
+        ...state,
+        users: [],
+      };
+    }
     default:
       return state;
   }

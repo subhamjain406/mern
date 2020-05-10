@@ -117,4 +117,26 @@ router.get(
   }
 );
 
+// @route  Post api/user/all
+// @desc   return all user
+// @access private
+router.get(
+  "/all",
+  passport.authenticate("jwt", { session: false }),
+  (req, res) => {
+    User.find(
+      {},
+      {
+        name: 1,
+        _id: 1,
+        profile_img: 1,
+      }
+    )
+      .then((user) => {
+        res.json(user);
+      })
+      .catch((err) => res.status(404).json(err));
+  }
+);
+
 module.exports = router;

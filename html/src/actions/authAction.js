@@ -3,6 +3,7 @@ import {
   SET_CURRENT_USER,
   SET_CURRENT_USER_LOADING,
   CLEAR_ERRORS,
+  GET_ALL_USER,
 } from "./types";
 import axios from "axios";
 import setAuthToken from "../utility/setAuthToken";
@@ -95,4 +96,23 @@ export const setloginLoader = () => {
   return {
     type: SET_CURRENT_USER_LOADING,
   };
+};
+
+//get all user
+export const getAllUser = () => (dispatch) => {
+  axios
+    .get("/api/user/all")
+    .then((data) => {
+      console.log(data);
+      dispatch({
+        type: GET_ALL_USER,
+        payload: data.data,
+      });
+    })
+    .catch((err) => {
+      dispatch({
+        type: GET_ERRORS,
+        payload: err.response.data,
+      });
+    });
 };
