@@ -45,11 +45,11 @@ const Chat = (props) => {
     };
   }, []);
 
-  // useEffect(() => {
-  //   socket.on("message", (message) => {
-  //     setMessages([...messages, message]);
-  //   });
-  // }, [messages]);
+  useEffect(() => {
+    socket.on("message", (message) => {
+      setMessages([...messages, message]);
+    });
+  }, [messages]);
 
   useEffect(() => {
     setMessages(chats, ...messages);
